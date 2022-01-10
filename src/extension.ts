@@ -1,12 +1,23 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import TestCodeLensProvider from './providers/TestCodeLensProvider';
 
 let lastCommand: string;
 
 // this method is called when your extension is activated 
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+
+  context.subscriptions.push(vscode.commands.registerCommand('laratest.run', async (methodName?: string, runClass?: boolean) => {
+    console.log('laratest', methodName, runClass);
+    lastCommand = vscode.window.activeTextEditor?.document.fileName ?? '';
+    if (methodName && !runClass) {
+      lastCommand += ` --filter ${methodName}`;
+    }
+    await vscode.commands.executeCommand('workbench.action.terminal.clear');
+    await vscode.commands.executeCommand('workbench.action.tasks.runTask', `laratest: run`);
+  }));
 
   context.subscriptions.push(vscode.commands.registerCommand('laratest.runFileTests', async () => {
     lastCommand = vscode.window.activeTextEditor?.document.fileName ?? '';
@@ -29,6 +40,11 @@ export function activate(context: vscode.ExtensionContext) {
       return undefined;
     }
   }));
+
+  context.subscriptions.push(vscode.languages.registerCodeLensProvider({
+    language: 'php',
+    scheme: 'file'
+  }, new TestCodeLensProvider));
 
 }
 
