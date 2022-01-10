@@ -3,6 +3,10 @@
   "displayName": "LaraTest",
   "description": "Run Feature, Unit, and Dusk tests with Artisan",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KimPalao/laratest"
+  },
   "engines": {
     "vscode": "^1.63.0"
   },
