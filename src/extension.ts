@@ -4,14 +4,21 @@ import * as vscode from 'vscode';
 import TestCodeLensProvider from './providers/TestCodeLensProvider';
 
 let lastCommand: string;
+let useDusk = false;
 
 // this method is called when your extension is activated 
 // your extension is activated the very first time the command is executed
+
+function isDuskTest(fileName: string) {
+  return fileName.includes('tests/Browser');
+}
+
 export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(vscode.commands.registerCommand('laratest.run', async (methodName?: string, runClass?: boolean) => {
     console.log('laratest', methodName, runClass);
     lastCommand = vscode.window.activeTextEditor?.document.fileName ?? '';
+    useDusk = isDuskTest(lastCommand);
     if (methodName && !runClass) {
       lastCommand += ` --filter ${methodName}`;
     }
@@ -21,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(vscode.commands.registerCommand('laratest.runFileTests', async () => {
     lastCommand = vscode.window.activeTextEditor?.document.fileName ?? '';
+    useDusk = isDuskTest(lastCommand);
     await vscode.commands.executeCommand('workbench.action.terminal.clear');
     await vscode.commands.executeCommand('workbench.action.tasks.runTask', `laratest: run`);
   }));
@@ -32,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.TaskScope.Workspace,
         'run',
         'laratest',
-        new vscode.ShellExecution(`php artisan test ${lastCommand}`),
+        new vscode.ShellExecution(`php artisan ${useDusk ? 'dusk' : 'test'} ${lastCommand}`),
         '$laratest'
       )];
     },
